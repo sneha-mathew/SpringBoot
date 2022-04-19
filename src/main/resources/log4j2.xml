@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" name="spring-boot-log-to-kafka-example" packages="io.woolford">
+    <Properties>
+        <Property name="bootstrap.servers">${bundle:env:bootstrap.servers}</Property>
+        <Property name="kafka.topic.logs">${bundle:env:kafka.topic.logs}</Property>
+    </Properties>
+
+    <Appenders>
+
+        <Kafka name="kafkaLogAppender" topic="${kafka.topic.logs}">
+            <JSONLayout />
+            <Property name="bootstrap.servers">${bootstrap.servers}</Property>
+        </Kafka>
+
+        <Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} stdout %highlight{%-5p} [%-7t] %F:%L - %m%n" />
+        </Console>
+
+        <Console name="stderr" target="SYSTEM_ERR">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %highlight{stderr} %highlight{%-5p} [%-7t] %F:%L - %m%n" />
+            <Filters>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" />
+            </Filters>
+        </Console>
+
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="kafkaLogAppender" />
+            <!--stdout/stderr included for testing Oozie log4j edits-->
+            <AppenderRef ref="stdout" />
+            <AppenderRef ref="stderr" />
+        </Root>
+        <!-- Do not let org.apache.kafka log to a Kafka appender on DEBUG level. That will cause recursive logging -->
+        <Logger name="org.apache.kafka" level="warn" />
+    </Loggers>
+</Configuration>
